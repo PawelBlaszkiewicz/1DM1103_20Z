@@ -25,9 +25,9 @@
     float tab[2][3];
     float suma=0;
     printf("(3) [");
-     for (int i = 0; i<3;   )
+     for (int i = 0; i<a;   )
      {
-         for(int j = 0; j<2;   )
+         for(int j = 0; j<b;   )
          {
              fscanf(fin, "%f", &k);
              suma=(k*wektor[j])+suma;
