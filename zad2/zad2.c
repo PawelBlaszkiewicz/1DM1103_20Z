@@ -21,8 +21,7 @@
         fscanf(fic,"%f",&l);
         wektor[i]=l;
     }
-
-    float tab[2][3];
+    
     float suma=0;
     printf("(3) [");
      for (int i = 0; i<a;   )
