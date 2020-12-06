@@ -7,7 +7,7 @@
 
 void uwolnij(struct macierz *m)
 {
-    for(int i=0;i<m->r;i++)
+    for(int i=0;i< m->r;i++)
     {
         free(m->data[i]);
     }

@@ -1,0 +1,13 @@
+4
+ROBERT;KOWALSKI;123456;ala@g.c
+MARIA;NOWAK;000007;brak@brak.pl
+GRZEG;SCHETYNSKI;125342;dwi@efe.pl
+Maciek;Szmatko;707070;szmatkom@o2.pl
+3
+1DE1234;Programowanko;2020Z
+1DM4321;Matematyczne metody numeryczne;2020L
+1DM7453;Mechanika_cząstek_niematerialnych;2090Z
+3
+123456;1DE1234;5;
+000007;1DE1234;2;NAJS
+123456;1DM4321;5;Świetnie!
