@@ -1,0 +1,274 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <curl/curl.h>
+#include "../cJSON/cJSON.h"
+ 
+typedef struct Memory {
+  char *response;
+  size_t size;
+}Memory;
+ 
+static size_t WriteMemoryCallback(void *data, size_t size, size_t nmemb, void *userp)
+{
+  size_t realsize = size * nmemb;
+  Memory *mem = (Memory *)userp;
+
+  char *ptr = NULL;
+ 
+ if(mem->response !=NULL)
+ {  
+     ptr = realloc(mem->response, mem->size + realsize + 1);
+ }
+ else
+ {
+     ptr=malloc(mem->size + realsize + 1);
+ }
+
+  if(ptr == NULL) 
+  { 
+    printf("brak pamięci\n");
+    return 0;
+  }
+ 
+  mem->response = ptr;
+  memcpy(&(mem->response[mem->size]), data, realsize);
+  mem->size += realsize;
+  mem->response[mem->size] = 0;
+ 
+  return realsize;
+}
+
+
+int make_request(char *token)
+{
+  CURL *curl;
+  CURLcode res;
+  Memory chunk; 
+  chunk.size = 0;   
+  chunk.response=NULL;  
+ 
+  curl = curl_easy_init();
+ if(curl)
+ {
+  
+  curl_easy_setopt(curl, CURLOPT_URL, token); 
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); 
+  curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
+ 
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+  res = curl_easy_perform(curl);
+  
+  if(res != CURLE_OK) {
+    fprintf(stderr, "Błąd! curl_easy_perform() niepowodzenie: %s\n",curl_easy_strerror(res));
+  }
+  else {
+    printf("%s", chunk.response);
+  }
+ 
+  free(chunk.response);
+  curl_easy_cleanup(curl);
+ }
+return 1;
+}
+ 
+int main(int argc, char **argv)
+{
+    char *url_info =  "http://edi.iem.pw.edu.pl:30000/worlds/api/v1/worlds/info/qwerty_1" ;
+    char *url_rleft =  "http://edi.iem.pw.edu.pl:30000/worlds/api/v1/worlds/rotate/qwerty_1/left" ;
+    char *url_rright =  "http://edi.iem.pw.edu.pl:30000/worlds/api/v1/worlds/rotate/qwerty_1/right" ;
+    char *url_move =  "http://edi.iem.pw.edu.pl:30000/worlds/api/v1/worlds/move/qwerty_1" ;
+    char *url_exp =  "http://edi.iem.pw.edu.pl:30000/worlds/api/v1/worlds/explore/qwerty_1" ;
+
+    for(int i=1;i<argc;i++)
+    {
+    if(strcmp(argv[i],"info")==0)
+    {
+        make_request(url_info);
+        printf("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+    }
+    else if(strcmp(argv[i],"rotate_left")==0)
+    {
+        make_request(url_rleft);
+        printf("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+    }
+    else if(strcmp(argv[i],"rotate_right")==0)
+    {
+        make_request(url_rright);
+        printf("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+    }
+    else if(strcmp(argv[i],"move")==0)
+    {
+        make_request(url_move);
+        printf("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+    }
+    else if(strcmp(argv[i],"explore")==0)
+    {
+        make_request(url_exp);
+        printf("////////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n");
+    }
+
+    }
+
+  
+  return 0;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Odpowiedzi z ubuntu:
+make test
+./curl move move rotate_left move move rotate_right move move rotate_right move move rotate_right move move rotate_right move move
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "S", "step": 42, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "S", "step": 43, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "E", "step": 44, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 3, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "E", "step": 45, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 4, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "E", "step": 46, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 4, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "S", "step": 47, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 4, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "S", "step": 48, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:16 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 4, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "S", "step": 49, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 4, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "W", "step": 50, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 3, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "W", "step": 51, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "W", "step": 52, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 223
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 1, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "N", "step": 53, "field_type": "grass", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 222
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 2, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "N", "step": 56, "field_type": "sand", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 222
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 3, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "N", "step": 59, "field_type": "sand", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 222
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 3, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "E", "step": 60, "field_type": "sand", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 222
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 3, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "E", "step": 61, "field_type": "sand", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+HTTP/1.0 200 OK
+Content-Type: application/json
+Content-Length: 222
+Access-Control-Allow-Origin: *
+Server: Werkzeug/1.0.1 Python/3.6.9
+Date: Fri, 18 Dec 2020 07:49:17 GMT
+
+{"status": "Success", "payload": {"name": "First world 1", "current_x": 2, "current_y": 3, "current_session": "b3a8fbc0-5762-4863-aeed-d3efd82b9d16", "direction": "E", "step": 62, "field_type": "sand", "field_bonus": ""}}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
